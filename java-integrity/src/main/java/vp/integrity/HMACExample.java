@@ -1,4 +1,4 @@
-package isp.integrity;
+package vp.integrity;
 
 import fri.isp.Agent;
 
