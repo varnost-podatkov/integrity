@@ -28,7 +28,7 @@ public class WriteToFileHMAC {
         mac.update(pt);
         final byte[] tag = mac.doFinal();
 
-        // konateniramo značko in čistopis
+        // konkateniramo značko in čistopis
         final byte[] data = Arrays.copyOf(tag, tag.length + pt.length);
         System.arraycopy(pt, 0, data, tag.length, pt.length);
 
