@@ -1,126 +1,45 @@
 package vp.integrity;
 
-import fri.isp.Agent;
-
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.HexFormat;
 
 public class HMACExample {
     public static void main(String[] args) throws Exception {
 
-        final String message = "We would like to provide data integrity for this message.";
+        final String message = "Moje sporočilo.";
+        final byte[] pt = message.getBytes(StandardCharsets.UTF_8);
 
-        /*
-         * STEP 1.
-         * Select HMAC algorithm and get new HMAC object instance.
-         * Standard Algorithm Names
-         * http://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html
-         */
-        final Mac alice = Mac.getInstance("HmacSHA256");
-
-        /*
-         * STEP 1.
-         * Alice and Bob agree upon a shared secret session key that will be
-         * used for hash based message authentication code.
-         */
         final Key key = KeyGenerator.getInstance("HmacSHA256").generateKey();
 
-        /*
-         * STEP 3.
-         * Initialize HMAC and provide shared secret session key. Create an HMAC tag.
-         */
-        alice.init(key);
-        final byte[] tag1 = alice.doFinal(message.getBytes(StandardCharsets.UTF_8));
+        final Mac ana = Mac.getInstance("HmacSHA256");
+        ana.init(key);
 
-        /*
-         * STEP 4.
-         * Print out HMAC.
-         */
-        final String messageHmacAsString = Agent.hex(tag1);
-        System.out.println("HMAC: " + messageHmacAsString);
+        ana.update(pt);
+        final byte[] tag = ana.doFinal();
 
-        /*
-         * STEP 5.
-         * Bob verifies the tag.
-         */
-        final Mac bob = Mac.getInstance("HmacSHA256");
-        bob.init(key);
-        final byte[] tag2 = bob.doFinal(message.getBytes(StandardCharsets.UTF_8));
+        // alternativno v enem koraku
+        // final byte[] tag = ana.doFinal(pt);
 
-        // Is the mac correct?
+        final String tagHex = HexFormat.of().formatHex(tag);
+        System.out.println("HMAC: " + tagHex);
 
-        // Never compare MACs this way
-        System.out.println(verify1(tag1, tag2));
+        // Ana pošlje (pt, tag) Boru
 
-        // Better
-        System.out.println(verify2(tag1, tag2));
+        final Mac bor = Mac.getInstance("HmacSHA256");
+        bor.init(key); // isti ključ kot Ana
+        final byte[] recomputedTag = bor.doFinal(pt);
 
-        // Even better
-        System.out.println(verify3(tag1, tag2, key));
-
-        // The best (now): see JavaDocs
-        // https://codahale.com/a-lesson-in-timing-attacks/
-        System.out.println(MessageDigest.isEqual(tag1, tag2));
-    }
-
-    public static boolean verify1(byte[] tag1, byte[] tag2) {
-        /*
-            FIXME: This is insecure
-            - The comparison is done byte by byte
-            - The comparator returns false immediately after the first inequality of bytes is found
-            (Use CTRL+click and see how the  Arrays.equals() is implemented)
-         */
-        return Arrays.equals(tag1, tag2);
-    }
-
-    public static boolean verify2(byte[] tag1, byte[] tag2) {
-        /*
-            FIXME: Defense #1
-
-            The idea is to compare all bytes
-
-            Important: A "smart" compiler may try to optimize this code
-            and end the loop prematurely and thus work against you ...
-         */
-
-        if (tag1 == tag2)
-            return true;
-        if (tag1 == null || tag2 == null)
-            return false;
-
-        int length = tag1.length;
-        if (tag2.length != length)
-            return false;
-
-        // This loop never terminates prematurely
-        byte result = 0;
-        for (int i = 0; i < length; i++) {
-            result |= tag1[i] ^ tag2[i];
+        // Bor preveri značko in sporočilo: ključ domevamo pozna
+        // Pri preverjanju moramo paziti na napade z merjenjem časa, zato primerjamo s funkcijo MessageDigest.isEqual
+        if (!MessageDigest.isEqual(tag, recomputedTag)) {
+            System.out.println("Received invalid data, aborting!");
+            System.exit(1);
         }
-        return result == 0;
+
+        System.out.printf("Data appears to be valid: '%s'%n", new String(pt, StandardCharsets.UTF_8));
     }
-
-    public static boolean verify3(byte[] tag1, byte[] tag2, Key key)
-            throws NoSuchAlgorithmException, InvalidKeyException {
-        /*
-            FIXME: Defense #2
-
-            The idea is to hide which bytes are actually being compared
-            by MAC-ing the tags once more and then comparing those tags
-         */
-        final Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(key);
-
-        final byte[] tagtag1 = mac.doFinal(tag1);
-        final byte[] tagtag2 = mac.doFinal(tag2);
-
-        return Arrays.equals(tagtag1, tagtag2);
-    }
-
 }
