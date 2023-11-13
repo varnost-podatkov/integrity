@@ -14,12 +14,13 @@ public class MessageDigestExample {
 
         final byte[] pt = message.getBytes(StandardCharsets.UTF_8);
 
-        // Izberemo ustrezno zgoščevalno funkcijo. Seznam veljavnih funkcij najdemo v dokumentaciji
+        // Izberemo ustrezno zgoščevalno funkcijo. Seznam veljavnih imen algoritmov najdemo v dokumentaciji
         // https://docs.oracle.com/en/java/javase/21/docs/specs/security/standard-names.html
         final MessageDigest algorithm = MessageDigest.getInstance("SHA-256");
 
         // dodamo čistopis
         algorithm.update(pt);
+
         // zaključimo zgoščevanje
         final byte[] hashed = algorithm.digest();
 
