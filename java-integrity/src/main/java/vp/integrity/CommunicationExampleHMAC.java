@@ -30,7 +30,7 @@ public class CommunicationExampleHMAC {
             public void task() throws Exception {
                 final byte[] pt = "Zdravo Bor, tukaj Ana.".getBytes(StandardCharsets.UTF_8);
                 send("bor", pt);
-                print("Poslala sem sporočilo in značko.");
+                print("Poslala sem sporočilo.");
             }
         });
 
