@@ -26,17 +26,17 @@ public class ReadFromFileHMAC {
 
         // Preberemo konkatenirano značko in sporočilo
         final byte[] tagAndMessage = Files.readAllBytes(Path.of("../data/msg.bin"));
-        // Ju razdružimo: prvij 32 bajtov je značka
+        // Ju razdružimo: prvih 32 bajtov je značka
         final byte[] tag = Arrays.copyOfRange(tagAndMessage, 0, 32);
         // Preostali bajti predstavljajo sporočilo
         final byte[] message = Arrays.copyOfRange(tagAndMessage, 32, tagAndMessage.length);
 
         // sporočilo naložimo v algoritem MAC
         mac.update(message);
-        // in pri sebi izračunamo značko
+        // in izračunamo značko
         final byte[] recomputedTag = mac.doFinal();
 
-        // Preverimo, ali se naš izračun ujema z značko, ki smo jo prejeli z diska
+        // Preverimo, ali se naš izračun ujema z značko, ki smo jo prebrali z diska
         if (!MessageDigest.isEqual(tag, recomputedTag)) {
             System.out.println("Read invalid data, aborting!");
             System.exit(1);
