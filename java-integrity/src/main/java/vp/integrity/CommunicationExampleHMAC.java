@@ -15,9 +15,9 @@ import java.security.MessageDigest;
  * izmenjujejo sporočila.
  * <p>
  * Vsak agent se izvaja v svoji niti in neodvisno od ostalih. S pomočjo klicev funkcije
- * send(String) in receive(String) agenti pošiljajo in prejemajo sporočila.
+ * `send(byte[])` in `byte[] receive(String)` agenti pošiljajo in prejemajo sporočila.
  * <p>
- * Enota poslanega podatka je polje bajtov, zato je treba vsak podatek pred
+ * Enota poslanega podatka je polje bajtov (byte[]), zato je treba vsak podatek pred
  * pošiljanjem postrojiti.
  */
 public class CommunicationExampleHMAC {
@@ -30,7 +30,7 @@ public class CommunicationExampleHMAC {
             public void task() throws Exception {
                 final byte[] pt = "Zdravo Bor, tukaj Ana.".getBytes(StandardCharsets.UTF_8);
                 send("bor", pt);
-                print("Poslala sem sporočilo in značko.");
+                print("Poslala sem sporočilo.");
             }
         });
 
